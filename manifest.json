@@ -1,0 +1,20 @@
+{
+  "name": "Night City Crawl",
+  "short_name": "NightCrawl",
+  "description": "A cyberpunk dungeon crawler set in Night City. Turn-based roguelike with hacking, shooting, and looting.",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "theme_color": "#020b18",
+  "background_color": "#020b18",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games"],
+  "screenshots": []
+}

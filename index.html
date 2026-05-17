@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#020b18">
+  <title>Night City Crawl</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- HUD overlay -->
+  <div id="hud">
+    <div id="hud-top">
+      <div id="hud-floor">
+        <span class="neon-text">SECTOR</span>
+        <span id="floor-num">1/10</span>
+      </div>
+      <div id="hud-stats">
+        <div class="stat-bar">
+          <span class="stat-label">HP</span>
+          <div class="bar-bg"><div id="hp-bar" class="bar hp-bar" style="width:100%"></div></div>
+          <span class="stat-val" id="hp-val">100/100</span>
+        </div>
+        <div class="stat-bar">
+          <span class="stat-label">EN</span>
+          <div class="bar-bg"><div id="en-bar" class="bar en-bar" style="width:100%"></div></div>
+          <span class="stat-val" id="en-val">60/60</span>
+        </div>
+        <div style="display:flex;gap:8px;font-size:9px;margin-top:1px">
+          <span id="level-val" style="color:#69ff47">LVL 1</span>
+          <span id="district-name" style="color:#b0bec5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px"></span>
+          <span id="ammo-val" style="display:none"></span>
+        </div>
+      </div>
+      <button class="hud-btn" id="inv-btn">INV</button>
+    </div>
+    <div id="msg-log">
+      <div id="msg-content"></div>
+    </div>
+  </div>
+
+  <!-- Touch Controls -->
+  <div id="touch-controls">
+    <div id="dpad">
+      <button class="dpad-btn" id="btn-n">▲</button>
+      <div class="dpad-row">
+        <button class="dpad-btn" id="btn-w">◀</button>
+        <button class="dpad-btn" id="btn-wait">·</button>
+        <button class="dpad-btn" id="btn-e">▶</button>
+      </div>
+      <button class="dpad-btn" id="btn-s">▼</button>
+    </div>
+    <div id="action-btns">
+      <button class="action-btn" id="btn-hack">HACK</button>
+      <button class="action-btn" id="btn-shoot">SHOOT</button>
+      <button class="action-btn" id="btn-pickup">TAKE</button>
+      <button class="action-btn" id="btn-stairs">NEXT</button>
+    </div>
+  </div>
+
+  <!-- ══ SCREENS ══ -->
+
+  <div id="menu-screen" class="screen active">
+    <div class="menu-content">
+      <div class="title-art">
+        <pre class="neon-title">NIGHT CITY
+  CRAWL</pre>
+        <p class="subtitle">Cyberpunk Dungeon Crawler · 2077</p>
+      </div>
+      <div class="menu-buttons">
+        <button class="menu-btn" id="start-btn">▶ JACK IN</button>
+        <button class="menu-btn" id="continue-btn" style="display:none">⟳ CONTINUE</button>
+        <button class="menu-btn secondary" id="how-btn">? HOW TO PLAY</button>
+      </div>
+      <div class="version">v1.0 // ARASAKA CLASSIFIED</div>
+    </div>
+  </div>
+
+  <div id="inventory-screen" class="screen">
+    <div class="screen-header">
+      <h2 class="neon-text" style="font-size:16px;letter-spacing:3px">◈ INVENTORY</h2>
+      <button class="close-btn" id="close-inv">✕</button>
+    </div>
+    <div id="inv-content">
+      <div id="equipment-panel">
+        <h3>EQUIPPED</h3>
+        <div id="equipment-slots"></div>
+      </div>
+      <div id="items-panel">
+        <h3>BACKPACK</h3>
+        <div id="items-list"></div>
+      </div>
+      <div id="stats-panel">
+        <h3>STATS</h3>
+        <div id="player-stats"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="gameover-screen" class="screen">
+    <div class="screen-content">
+      <h2 class="neon-text red">◈ FLATLINED ◈</h2>
+      <p id="death-message" style="color:#b0bec5;font-size:13px"></p>
+      <div id="final-stats" style="width:100%"></div>
+      <button class="menu-btn" id="retry-btn">TRY AGAIN</button>
+      <button class="menu-btn secondary" id="menu-btn2">MAIN MENU</button>
+    </div>
+  </div>
+
+  <div id="win-screen" class="screen">
+    <div class="screen-content">
+      <h2 class="neon-text">◈ LEGEND ◈</h2>
+      <p style="color:#b0bec5;font-size:13px;text-align:center;max-width:300px">
+        You cracked the Arasaka vault and downloaded their darkest secrets.<br>
+        Night City will remember your name.
+      </p>
+      <div id="win-stats" style="width:100%"></div>
+      <button class="menu-btn" id="play-again-btn">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <div id="howto-screen" class="screen">
+    <div class="screen-header">
+      <h2 class="neon-text" style="font-size:15px;letter-spacing:2px">◈ HOW TO PLAY</h2>
+      <button class="close-btn" id="close-howto">✕</button>
+    </div>
+    <div class="howto-content">
+      <h3>Movement</h3>
+      <p>▲▼◀▶ D-pad on screen, or swipe the map.</p>
+      <p>Arrow keys / WASD / hjkl work on keyboard.</p>
+      <p>Walk into an enemy to melee attack.</p>
+
+      <h3>Actions</h3>
+      <p><strong style="color:#e040fb">HACK</strong> — Quickhack nearest visible enemy (costs 15 EN, range 10).</p>
+      <p><strong style="color:#ffd740">SHOOT</strong> — Shoot nearest enemy with your ranged weapon.</p>
+      <p><strong style="color:#69ff47">TAKE</strong> — Pick up item on your tile.</p>
+      <p><strong style="color:#ff6d00">NEXT</strong> — Descend stairs when standing on ></p>
+      <p><strong style="color:#b0bec5">·</strong> — Wait / skip turn (regen 2 EN).</p>
+      <p><strong style="color:#00e5ff">INV</strong> — Open inventory (or press I).</p>
+
+      <h3>In Inventory</h3>
+      <p>Tap USE on weapons/armor to equip them.</p>
+      <p>Tap USE on consumables to use them.</p>
+      <p>Cyberware auto-installs into free slots.</p>
+
+      <h3>Status Bars</h3>
+      <p><strong style="color:#ff6d00">HP</strong> — Health. Reach 0 and you're flatlined.</p>
+      <p><strong style="color:#00e5ff">EN</strong> — Energy. Used for hacking. Regens +2 every 5 turns.</p>
+
+      <h3>Enemies</h3>
+      <p><strong style="color:#ff1744">G</strong> Maelstrom Ganger — Melee brute. Weak to hacking.</p>
+      <p><strong style="color:#448aff">N</strong> NCPD Officer — Shoots from range. Alert and accurate.</p>
+      <p><strong style="color:#ffd740">D</strong> Security Drone — Flying, ranged. High hack defense.</p>
+      <p><strong style="color:#e040fb">R</strong> Netrunner — Hacks you at range. Drains HP + EN.</p>
+      <p><strong style="color:#b0bec5">S</strong> Corp Soldier — Tough, armed. Mid-to-late game.</p>
+      <p><strong style="color:#ff6d00">M</strong> MaxTac Elite — Cyborg police. Very dangerous.</p>
+      <p><strong style="color:#ff1744">B</strong> Boss — Arasaka Operative. Final floor guardian.</p>
+
+      <h3>Tiles</h3>
+      <p><strong style="color:#ffd740">&gt;</strong> Stairs down — Use NEXT button to descend.</p>
+      <p><strong style="color:#69ff47">▣</strong> Terminal — Flavor only (no interaction yet).</p>
+
+      <h3>Goal</h3>
+      <p>Descend all 10 sectors of Night City and crack the Arasaka vault. Good luck, choom.</p>
+    </div>
+  </div>
+
+  <script type="module" src="js/game.js"></script>
+
+  <script>
+    // Register service worker for PWA offline support
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
