@@ -79,7 +79,7 @@ export class Player {
       this.energy = Math.min(this.energy + 10, this.maxEnergy);
       this.baseAtk += 2;
       this.baseHack += 3;
-      msgs.push(`Level up! Now level ${this.level}. HP+15, EN+10, ATK+2.`);
+      msgs.push(`LEVEL UP → LVL ${this.level}! HP+15 EN+10 ATK+2`);
     }
     return msgs;
   }
