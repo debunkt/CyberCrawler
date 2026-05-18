@@ -113,7 +113,7 @@ export function generateFloorItems(floorNum) {
   return items;
 }
 
-const PRICE_MULT = { weapon: 80, armor: 70, consumable: 40, cyberware: 150 };
+const floorScale = (floorNum) => 1 + floorNum * 0.05;
 
 export function generateShopStock(floorNum) {
   const stock = [];
@@ -124,7 +124,7 @@ export function generateShopStock(floorNum) {
     const weights = eligibleW.map(w => ({ value: w, weight: w.floor }));
     const def = weightedRand(weights);
     const item = makeWeapon(def);
-    item.price = Math.floor((def.minDmg + def.maxDmg) * PRICE_MULT.weapon * (1 + floorNum * 0.1));
+    item.price = Math.floor((def.minDmg + def.maxDmg) * 6 * floorScale(floorNum));
     stock.push(item);
   }
 
@@ -133,7 +133,7 @@ export function generateShopStock(floorNum) {
   if (eligibleA.length) {
     const def = randChoice(eligibleA);
     const item = makeArmor(def);
-    item.price = Math.floor((def.defense * 100 + (def.hpBonus || 0) * 20) * PRICE_MULT.armor * (1 + floorNum * 0.1));
+    item.price = Math.floor((def.defense * 40 + (def.hpBonus || 0) * 3) * floorScale(floorNum));
     stock.push(item);
   }
 
@@ -142,7 +142,7 @@ export function generateShopStock(floorNum) {
   for (let i = 0; i < 2; i++) {
     const def = randChoice(eligibleC);
     const item = makeConsumable(def);
-    item.price = Math.floor(((def.hpRestore || 0) + (def.enRestore || 0) * 1.5 + (def.atkBuff || 0) * 30) * PRICE_MULT.consumable);
+    item.price = Math.floor((def.hpRestore || 0) * 3 + (def.enRestore || 0) * 4 + (def.atkBuff || 0) * 20);
     stock.push(item);
   }
 
@@ -151,7 +151,7 @@ export function generateShopStock(floorNum) {
   if (eligibleCy.length) {
     const def = randChoice(eligibleCy);
     const item = makeCyberware(def);
-    item.price = Math.floor(PRICE_MULT.cyberware * (1 + floorNum * 0.15) * 100);
+    item.price = 200 + floorNum * 50;
     stock.push(item);
   }
 
