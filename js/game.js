@@ -272,19 +272,19 @@ class Game {
         // Credits transfer
         const credits = rand(100, 400) * this.floor;
         this.player.credits += credits;
-        this.ui.addMessage(`Terminal: siphoned ${credits}¥ from corporate accounts.`, 'yellow');
+        this.ui.addMessage(`Terminal: siphoned ${credits}¥ from corps.`, 'yellow');
         break;
       case 2:
         // Energy restore
         const enGain = this.player.restoreEnergy(40);
-        this.ui.addMessage(`Terminal: neural link synced — +${enGain} EN restored.`, 'cyan');
+        this.ui.addMessage(`Terminal: neural sync — +${enGain} EN.`, 'cyan');
         break;
       case 3:
         // Reveal all item locations on this floor
         for (let y = 0; y < this.dungeon.height; y++)
           for (let x = 0; x < this.dungeon.width; x++)
             if (this.dungeon.map[y][x].item) this.dungeon.map[y][x].explored = true;
-        this.ui.addMessage('Terminal: contraband locations flagged on your HUD.', 'green');
+        this.ui.addMessage('Terminal: contraband flagged on HUD.', 'green');
         break;
     }
 
