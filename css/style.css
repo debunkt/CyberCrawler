@@ -486,6 +486,21 @@ html, body {
 }
 .drop-btn:active { background: rgba(255, 23, 68, 0.3); }
 
+.buy-btn {
+  background: rgba(255, 215, 64, 0.1);
+  border: 1px solid rgba(255, 215, 64, 0.5);
+  color: var(--neon-yellow);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 6px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+  min-width: 52px;
+}
+.buy-btn:active { background: rgba(255, 215, 64, 0.3); }
+
 .empty-msg {
   color: rgba(255,255,255,0.3);
   font-size: 12px;

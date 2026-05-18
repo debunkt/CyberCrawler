@@ -158,11 +158,15 @@ export class Renderer {
       ctx.fillText(GLYPH[type], sx + ts / 2, sy + ts / 2);
       ctx.shadowBlur = 0;
     } else if (type === TILE.TERMINAL) {
+      const isShop = cell.isShop;
+      const tColor = isShop ? COLORS.NEON_YELLOW : COLORS.TERMINAL;
+      const tDim   = isShop ? '#2a2000' : '#0d1a0d';
       const pulse = visible ? Math.sin(this.animFrame * 0.08) * 6 + 8 : 0;
       ctx.shadowBlur = pulse;
-      ctx.shadowColor = COLORS.TERMINAL;
-      ctx.fillStyle = visible ? COLORS.TERMINAL : '#0d1a0d';
-      ctx.fillText(GLYPH[type], sx + ts / 2, sy + ts / 2);
+      ctx.shadowColor = tColor;
+      ctx.fillStyle = visible ? tColor : tDim;
+      // Shop terminals show $ glyph, regular show ▣
+      ctx.fillText(isShop ? '$' : GLYPH[type], sx + ts / 2, sy + ts / 2);
       ctx.shadowBlur = 0;
     }
   }

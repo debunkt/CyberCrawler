@@ -180,7 +180,8 @@ export class Dungeon {
     }
     this.map[this.endPos.y][this.endPos.x].type = TILE.STAIRS_DOWN;
 
-    // Place terminals in random rooms
+    // Place terminals in random rooms; one is always a shop
+    const terminalRooms = [];
     for (let i = 1; i < this.rooms.length - 1; i++) {
       if (Math.random() < 0.3) {
         const r = this.rooms[i];
@@ -188,8 +189,25 @@ export class Dungeon {
         const ty = rand(r.y + 1, r.y + r.h - 2);
         if (this.map[ty][tx].type === TILE.FLOOR) {
           this.map[ty][tx].type = TILE.TERMINAL;
+          terminalRooms.push({ x: tx, y: ty });
         }
       }
+    }
+    // Guarantee at least one terminal that is a shop
+    if (terminalRooms.length === 0 && this.rooms.length > 2) {
+      const r = this.rooms[Math.floor(this.rooms.length / 2)];
+      const tx = Math.floor(r.x + r.w / 2);
+      const ty = Math.floor(r.y + r.h / 2);
+      if (this.map[ty][tx].type === TILE.FLOOR) {
+        this.map[ty][tx].type = TILE.TERMINAL;
+        terminalRooms.push({ x: tx, y: ty });
+      }
+    }
+    // Pick one terminal to be the shop
+    if (terminalRooms.length > 0) {
+      const shopPos = randChoice(terminalRooms);
+      this.map[shopPos.y][shopPos.x].isShop = true;
+      this.shopPos = shopPos;
     }
   }
 

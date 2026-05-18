@@ -1,6 +1,6 @@
 import { Dungeon } from './dungeon.js';
 import { Player, createEnemy, FLOOR_ENEMY_POOLS, getEnemyCountForFloor } from './entities.js';
-import { generateFloorItems, generateStarterItems, ITEM_TYPE } from './items.js';
+import { generateFloorItems, generateStarterItems, generateShopStock, ITEM_TYPE } from './items.js';
 import { Combat } from './combat.js';
 import { Renderer } from './renderer.js';
 import { Audio } from './audio.js';
@@ -236,6 +236,14 @@ class Game {
   }
 
   _hackTerminal() {
+    const cell = this.dungeon.map[this.player.y][this.player.x];
+
+    // Shop terminal — no energy cost, open market
+    if (cell.isShop) {
+      this._openShop();
+      return true;
+    }
+
     const hackCost = 10;
     if (this.player.energy < hackCost) {
       this.ui.addMessage('Not enough energy to jack in. Need 10 EN.', 'red');
@@ -245,6 +253,7 @@ class Game {
 
     // Mark terminal as used (becomes floor)
     this.dungeon.map[this.player.y][this.player.x].type = TILE.FLOOR;
+    cell.isShop = false;
 
     this.audio.playHack();
     this.renderer.spawnParticles(this.player.x, this.player.y, COLORS.NEON_GREEN, 14);
@@ -519,6 +528,41 @@ class Game {
 
     this.ui.updateHUD(this.player, this.floor);
     this.ui.showInventory(this.player);
+  }
+
+  _openShop() {
+    if (!this._shopStock) {
+      this._shopStock = generateShopStock(this.floor);
+    }
+    this.state = STATE.INVENTORY; // pause enemies
+    this.ui.showShop(this.player, this._shopStock);
+  }
+
+  closeShop() {
+    this._shopStock = null;
+    this.state = STATE.PLAYING;
+    this.ui.hideAllScreens();
+  }
+
+  buyShopItem(idx) {
+    const item = this._shopStock?.[idx];
+    if (!item) return;
+    if (this.player.credits < item.price) {
+      this.ui.addMessage(`Need ${item.price}¥ — you only have ${this.player.credits}¥.`, 'red');
+      this.ui.showShop(this.player, this._shopStock);
+      return;
+    }
+    if (this.player.inventory.length >= this.player.maxInventory) {
+      this.ui.addMessage('Inventory full — drop something first.', 'red');
+      this.ui.showShop(this.player, this._shopStock);
+      return;
+    }
+    this.player.credits -= item.price;
+    this.player.addItem(item);
+    this._shopStock.splice(idx, 1);
+    this.ui.addMessage(`Bought ${item.name} for ${item.price}¥.`, 'yellow');
+    this.ui.updateHUD(this.player, this.floor);
+    this.ui.showShop(this.player, this._shopStock);
   }
 
   dropInventoryItem(idx) {
