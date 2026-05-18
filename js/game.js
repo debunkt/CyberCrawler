@@ -259,7 +259,7 @@ class Game {
     this.renderer.spawnParticles(this.player.x, this.player.y, COLORS.NEON_GREEN, 14);
 
     // Random terminal effect
-    const effect = rand(0, 4);
+    const effect = rand(0, 3);
     switch (effect) {
       case 0:
         // Reveal entire floor map including walls
@@ -269,29 +269,17 @@ class Game {
         this.ui.addMessage('Terminal: full sector map downloaded.', 'green');
         break;
       case 1:
-        // Stun all visible enemies
-        let stunned = 0;
-        for (const enemy of this.dungeon.enemies) {
-          if (this.dungeon.map[enemy.y]?.[enemy.x]?.visible) {
-            enemy.statusEffects = { ...enemy.statusEffects, stunned: 3 };
-            enemy.alerted = true;
-            stunned++;
-          }
-        }
-        this.ui.addMessage(`Terminal: ICE deployed — ${stunned} enemy${stunned !== 1 ? 's' : ''} stunned for 3 turns.`, 'green');
-        break;
-      case 2:
         // Credits transfer
         const credits = rand(100, 400) * this.floor;
         this.player.credits += credits;
         this.ui.addMessage(`Terminal: siphoned ${credits}¥ from corporate accounts.`, 'yellow');
         break;
-      case 3:
+      case 2:
         // Energy restore
         const enGain = this.player.restoreEnergy(40);
         this.ui.addMessage(`Terminal: neural link synced — +${enGain} EN restored.`, 'cyan');
         break;
-      case 4:
+      case 3:
         // Reveal all item locations on this floor
         for (let y = 0; y < this.dungeon.height; y++)
           for (let x = 0; x < this.dungeon.width; x++)
