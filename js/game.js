@@ -262,11 +262,10 @@ class Game {
     const effect = rand(0, 4);
     switch (effect) {
       case 0:
-        // Reveal entire floor map
+        // Reveal entire floor map including walls
         for (let y = 0; y < this.dungeon.height; y++)
           for (let x = 0; x < this.dungeon.width; x++)
-            if (this.dungeon.map[y][x].type !== TILE.WALL)
-              this.dungeon.map[y][x].explored = true;
+            this.dungeon.map[y][x].explored = true;
         this.ui.addMessage('Terminal: full sector map downloaded.', 'green');
         break;
       case 1:
