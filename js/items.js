@@ -125,7 +125,7 @@ export function generateFloorItems(floorNum) {
   return items;
 }
 
-const floorScale = (floorNum) => 1 + floorNum * 0.05;
+const floorScale = (floorNum) => 1 + floorNum * floorNum * 0.1;
 
 export function generateShopStock(floorNum) {
   const stock = [];
@@ -154,7 +154,7 @@ export function generateShopStock(floorNum) {
   for (let i = 0; i < 2; i++) {
     const def = randChoice(eligibleC);
     const item = makeConsumable(def);
-    item.price = Math.floor((def.hpRestore || 0) * 3 + (def.enRestore || 0) * 4 + (def.atkBuff || 0) * 20);
+    item.price = Math.floor(((def.hpRestore || 0) * 3 + (def.enRestore || 0) * 4 + (def.atkBuff || 0) * 20) * floorScale(floorNum));
     stock.push(item);
   }
 
@@ -163,7 +163,7 @@ export function generateShopStock(floorNum) {
   for (let i = 0; i < 2; i++) {
     const def = randChoice(eligibleAmmo);
     const item = makeConsumable(def);
-    item.price = 40 + floorNum * 10;
+    item.price = Math.floor(50 * floorScale(floorNum));
     stock.push(item);
   }
 
@@ -172,7 +172,7 @@ export function generateShopStock(floorNum) {
   if (eligibleCy.length) {
     const def = randChoice(eligibleCy);
     const item = makeCyberware(def);
-    item.price = 200 + floorNum * 50;
+    item.price = Math.floor(200 * floorScale(floorNum));
     stock.push(item);
   }
 
