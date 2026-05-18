@@ -441,24 +441,41 @@ class Game {
 
       const d = dist(enemy.x, enemy.y, p.x, p.y);
 
-      // Netrunner: hack at range
-      if (enemy.hackPower > 0 && d <= (enemy.hackRange || 8) && canSee) {
-        const result = Combat.hackAttack(enemy, p);
-        this.ui.addMessage(result.message, 'red');
-        this.renderer.flash('#8800ff', 0.15);
-        this.audio.playHit();
-        if (p.isDead()) return;
+      // Netrunner: hack at range (with reload)
+      if (enemy.hackPower > 0 && d <= (enemy.hackRange || 6) && canSee) {
+        if (enemy.reloadCooldown > 0) {
+          enemy.reloadCooldown--;
+        } else {
+          const result = Combat.hackAttack(enemy, p);
+          this.ui.addMessage(result.message, 'red');
+          this.renderer.flash('#8800ff', 0.15);
+          this.audio.playHit();
+          enemy.reloadCooldown = enemy.reloadMax;
+          if (p.isDead()) return;
+        }
         continue;
       }
 
-      // Ranged attack
+      // Ranged attack (with reload cooldown + distance-based miss)
       if (enemy.rangeAtk && d <= enemy.atkRange && d > 1.5 && canSee) {
-        const result = Combat.rangedAttack(enemy, p, this.dungeon.map);
-        if (!result.outOfRange && !result.noAmmo) {
-          this.ui.addMessage(result.message, 'red');
-          this.renderer.flash('#ff1744', 0.12);
-          this.audio.playHit();
-          if (p.isDead()) return;
+        if (enemy.reloadCooldown > 0) {
+          enemy.reloadCooldown--;
+          // Still move closer while reloading
+        } else {
+          // Miss chance: 10% at close range, up to 45% at max range
+          const missChance = 0.1 + (d / enemy.atkRange) * 0.35;
+          if (Math.random() < missChance) {
+            this.ui.addMessage(`${enemy.name} shoots and misses.`, 'normal');
+          } else {
+            const result = Combat.rangedAttack(enemy, p, this.dungeon.map);
+            if (!result.outOfRange && !result.noAmmo) {
+              this.ui.addMessage(result.message, 'red');
+              this.renderer.flash('#ff1744', 0.12);
+              this.audio.playHit();
+              if (p.isDead()) return;
+            }
+          }
+          enemy.reloadCooldown = enemy.reloadMax;
           continue;
         }
       }
