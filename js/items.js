@@ -113,6 +113,51 @@ export function generateFloorItems(floorNum) {
   return items;
 }
 
+const PRICE_MULT = { weapon: 80, armor: 70, consumable: 40, cyberware: 150 };
+
+export function generateShopStock(floorNum) {
+  const stock = [];
+
+  // 2 weapons
+  const eligibleW = WEAPON_DEFS.filter(w => w.floor <= floorNum + 1);
+  for (let i = 0; i < 2; i++) {
+    const weights = eligibleW.map(w => ({ value: w, weight: w.floor }));
+    const def = weightedRand(weights);
+    const item = makeWeapon(def);
+    item.price = Math.floor((def.minDmg + def.maxDmg) * PRICE_MULT.weapon * (1 + floorNum * 0.1));
+    stock.push(item);
+  }
+
+  // 1 armor
+  const eligibleA = ARMOR_DEFS.filter(a => a.floor <= floorNum + 1);
+  if (eligibleA.length) {
+    const def = randChoice(eligibleA);
+    const item = makeArmor(def);
+    item.price = Math.floor((def.defense * 100 + (def.hpBonus || 0) * 20) * PRICE_MULT.armor * (1 + floorNum * 0.1));
+    stock.push(item);
+  }
+
+  // 2 consumables
+  const eligibleC = CONSUMABLE_DEFS.filter(c => c.floor <= floorNum + 1);
+  for (let i = 0; i < 2; i++) {
+    const def = randChoice(eligibleC);
+    const item = makeConsumable(def);
+    item.price = Math.floor(((def.hpRestore || 0) + (def.enRestore || 0) * 1.5 + (def.atkBuff || 0) * 30) * PRICE_MULT.consumable);
+    stock.push(item);
+  }
+
+  // 1 cyberware
+  const eligibleCy = CYBERWARE_DEFS.filter(c => c.floor <= floorNum + 1);
+  if (eligibleCy.length) {
+    const def = randChoice(eligibleCy);
+    const item = makeCyberware(def);
+    item.price = Math.floor(PRICE_MULT.cyberware * (1 + floorNum * 0.15) * 100);
+    stock.push(item);
+  }
+
+  return stock;
+}
+
 export function generateStarterItems() {
   return [
     makeWeapon(WEAPON_DEFS[0]), // Combat Knife

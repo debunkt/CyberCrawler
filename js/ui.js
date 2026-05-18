@@ -117,6 +117,7 @@ export class UI {
     document.getElementById('continue-btn')?.addEventListener('click', () => g.continueGame());
     document.getElementById('how-btn')?.addEventListener('click', () => this.showScreen('howto-screen'));
     document.getElementById('close-howto')?.addEventListener('click', () => this.showScreen('menu-screen'));
+    document.getElementById('close-shop')?.addEventListener('click', () => g.closeShop());
     document.getElementById('retry-btn')?.addEventListener('click', () => g.newGame());
     document.getElementById('play-again-btn')?.addEventListener('click', () => g.newGame());
     document.getElementById('menu-btn2')?.addEventListener('click', () => this.showScreen('menu-screen'));
@@ -316,6 +317,35 @@ export class UI {
     `;
     this.showScreen('gameover-screen');
     this.hideHUD();
+  }
+
+  showShop(player, stock) {
+    document.getElementById('shop-credits').textContent = `${player.credits}¥`;
+    const el = document.getElementById('shop-items');
+    if (!el) return;
+    if (!stock || stock.length === 0) {
+      el.innerHTML = '<div class="empty-msg">Sold out. Come back next sector.</div>';
+    } else {
+      el.innerHTML = stock.map((item, i) => {
+        const canAfford = player.credits >= item.price;
+        return `
+          <div class="inv-item" style="border-color:${item.color}20">
+            <span class="item-sym" style="color:${item.color}">${item.sym}</span>
+            <div class="item-info">
+              <div class="item-name" style="color:${item.color}">${item.name}</div>
+              <div class="item-desc">${this._itemDesc(item)}</div>
+            </div>
+            <button class="buy-btn" data-idx="${i}" style="opacity:${canAfford ? 1 : 0.4}">
+              ${item.price}¥
+            </button>
+          </div>
+        `;
+      }).join('');
+      el.querySelectorAll('.buy-btn').forEach(btn => {
+        btn.addEventListener('click', () => this.game.buyShopItem(parseInt(btn.dataset.idx)));
+      });
+    }
+    this.showScreen('shop-screen');
   }
 
   showWin(player) {
