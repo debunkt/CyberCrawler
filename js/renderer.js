@@ -165,8 +165,8 @@ export class Renderer {
       ctx.shadowBlur = pulse;
       ctx.shadowColor = tColor;
       ctx.fillStyle = visible ? tColor : tDim;
-      // Shop terminals show $ glyph, regular show ▣
-      ctx.fillText(isShop ? '$' : GLYPH[type], sx + ts / 2, sy + ts / 2);
+      // Shop terminals show ¥ glyph, regular show ▣
+      ctx.fillText(isShop ? '¥' : GLYPH[type], sx + ts / 2, sy + ts / 2);
       ctx.shadowBlur = 0;
     }
   }
