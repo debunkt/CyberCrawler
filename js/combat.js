@@ -10,11 +10,13 @@ export class Combat {
     defender.hp -= dmg;
 
     const hit = rand(0, 2) === 0;
-    const adjective = dmg >= 25 ? 'CRITICAL' : dmg >= 15 ? 'hard' : 'for';
     const isPlayer = attacker.isPlayer;
-    const atkName = isPlayer ? 'You strike' : `${attacker.name} strikes`;
+    const atkName = isPlayer ? 'You' : attacker.name;
     const defName = isPlayer ? defender.name : 'you';
-    const msg = `${atkName} ${defName} ${adjective} (${dmg} dmg).`;
+    const adjective = dmg >= 25 ? 'CRIT' : '';
+    const msg = adjective
+      ? `${atkName} strikes ${defName}! ${adjective} ${dmg} dmg.`
+      : `${atkName} strikes ${defName}: ${dmg} dmg.`;
 
     return { dmg, killed: defender.hp <= 0, message: msg };
   }
@@ -35,7 +37,7 @@ export class Combat {
       defender.hp -= dmg;
       return {
         dmg, killed: defender.hp <= 0,
-        message: `You shoot ${defender.name} for ${dmg} damage. (${weapon.ammo} ammo left)`,
+        message: `Shot ${defender.name}: ${dmg} dmg.`,
       };
     } else {
       // Enemy ranged attack on player
@@ -47,7 +49,7 @@ export class Combat {
       }
       const dmg = Math.max(1, attacker.atk + rand(-4, 4) - defender.def);
       defender.hp = Math.max(0, defender.hp - dmg);
-      return { dmg, killed: defender.hp <= 0, message: `${attacker.name} shoots you for ${dmg}.` };
+      return { dmg, killed: defender.hp <= 0, message: `${attacker.name} shoots you: ${dmg} dmg.` };
     }
   }
 
@@ -62,7 +64,7 @@ export class Combat {
       defender.hp -= hackDmg;
       const effect = rand(0, 2) === 0 ? ' Enemy stunned!' : '';
       if (effect) defender.statusEffects = { stunned: 2, ...defender.statusEffects };
-      return { dmg: hackDmg, killed: defender.hp <= 0, message: `Quickhack hits ${defender.name} for ${hackDmg} neural damage.${effect}` };
+      return { dmg: hackDmg, killed: defender.hp <= 0, message: `Hack: ${defender.name} −${hackDmg} dmg.${effect}` };
     } else {
       // Enemy netrunner hacks player
       const hackDmg = Math.max(1, attacker.hackPower + rand(-5, 5));
@@ -72,7 +74,7 @@ export class Combat {
       return {
         dmg: hackDmg,
         killed: defender.hp <= 0,
-        message: `${attacker.name} hacks you! -${energyDrain} EN, -${Math.floor(hackDmg * 0.5)} HP.`,
+        message: `${attacker.name} hacks you! −${Math.floor(hackDmg * 0.5)} HP, −${energyDrain} EN.`,
       };
     }
   }
