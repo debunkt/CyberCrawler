@@ -1,7 +1,7 @@
 import { COLORS, DISTRICT_NAMES } from './config.js';
 import { ITEM_TYPE } from './items.js';
 
-const MAX_MESSAGES = 5;
+const MAX_MESSAGES = 8;
 
 export class UI {
   constructor(game) {
@@ -165,7 +165,7 @@ export class UI {
       yellow: COLORS.NEON_YELLOW,
       magenta: COLORS.NEON_MAGENTA,
     };
-    el.innerHTML = this.messages.slice(-3).map(m => {
+    el.innerHTML = this.messages.slice(-4).map(m => {
       const color = colorMap[m.type] || COLORS.TEXT;
       return `<div style="color:${color}">&gt; ${m.text}</div>`;
     }).join('');
