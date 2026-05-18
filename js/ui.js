@@ -387,14 +387,19 @@ export class UI {
 
   _sellRow(item, idx, equipped) {
     const price = this._getSellPrice(item);
+    const border = equipped ? 'border:1px solid #ff6d00;box-shadow:0 0 6px #ff6d0044' : `border:1px solid ${item.color}20`;
+    const badge  = equipped ? `<span style="font-size:9px;color:#ff6d00;letter-spacing:1px;font-weight:bold">◈ EQUIPPED</span>` : '';
+    const btnStyle = equipped
+      ? 'background:rgba(255,109,0,0.15);border:1px solid #ff6d00;color:#ff6d00'
+      : 'background:rgba(105,255,71,0.1);border:1px solid rgba(105,255,71,0.5);color:#69ff47';
     return `
-      <div class="inv-item" style="border-color:${item.color}20">
+      <div class="inv-item" style="${border}">
         <span class="item-sym" style="color:${item.color}">${item.sym}</span>
         <div class="item-info">
-          <div class="item-name" style="color:${item.color}">${item.name}</div>
+          <div class="item-name" style="color:${item.color}">${item.name} ${badge}</div>
           <div class="item-desc">${this._itemDesc(item)}</div>
         </div>
-        <button class="sell-price" data-idx="${idx}" data-equipped="${equipped}">${price}¥</button>
+        <button class="sell-price" data-idx="${idx}" data-equipped="${equipped}" style="${btnStyle}">${price}¥</button>
       </div>`;
   }
 
