@@ -454,6 +454,35 @@ class Game {
     this.ui.showInventory(this.player);
   }
 
+  dropInventoryItem(idx) {
+    const item = this.player.inventory[idx];
+    if (!item) return;
+
+    // Find a tile to drop on — player's tile if empty, otherwise adjacent
+    const candidates = [
+      { x: this.player.x, y: this.player.y },
+      { x: this.player.x + 1, y: this.player.y },
+      { x: this.player.x - 1, y: this.player.y },
+      { x: this.player.x, y: this.player.y + 1 },
+      { x: this.player.x, y: this.player.y - 1 },
+    ];
+    const spot = candidates.find(c => {
+      const cell = this.dungeon.map[c.y]?.[c.x];
+      return cell && !cell.item && cell.type !== 0; // not a wall
+    });
+
+    if (!spot) {
+      this.ui.addMessage('No room to drop item here.', 'red');
+      return;
+    }
+
+    this.player.removeItem(item);
+    this.dungeon.map[spot.y][spot.x].item = item;
+    this.ui.addMessage(`Dropped ${item.name}.`, 'normal');
+    this.ui.updateHUD(this.player, this.floor);
+    this.ui.showInventory(this.player);
+  }
+
   _gameOver(msg) {
     this.state = STATE.GAMEOVER;
     this.audio.playDeath();

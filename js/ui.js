@@ -242,13 +242,22 @@ export class UI {
               <div class="item-name" style="color:${item.color}">${item.name}</div>
               <div class="item-desc">${this._itemDesc(item)}</div>
             </div>
-            <button class="use-btn" data-idx="${i}">USE</button>
+            <div class="inv-btns">
+              <button class="use-btn" data-idx="${i}">USE</button>
+              <button class="drop-btn" data-idx="${i}">DROP</button>
+            </div>
           </div>
         `).join('');
         itemsEl.querySelectorAll('.use-btn').forEach(btn => {
           btn.addEventListener('click', () => {
             const idx = parseInt(btn.dataset.idx);
             this.game.useInventoryItem(idx);
+          });
+        });
+        itemsEl.querySelectorAll('.drop-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.idx);
+            this.game.dropInventoryItem(idx);
           });
         });
       }
