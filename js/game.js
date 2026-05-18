@@ -205,18 +205,24 @@ class Game {
   }
 
   _handleHack() {
-    // Find nearest visible enemy in hack range (10 tiles)
+    // Priority: hack terminal if standing on one
+    const cell = this.dungeon.map[this.player.y][this.player.x];
+    if (cell.type === TILE.TERMINAL) {
+      return this._hackTerminal();
+    }
+
+    // Otherwise quickhack nearest visible enemy
     const hackRange = 10;
     let target = null;
     let minD = Infinity;
     for (const enemy of this.dungeon.enemies) {
-      const cell = this.dungeon.map[enemy.y]?.[enemy.x];
-      if (!cell?.visible) continue;
+      const ecell = this.dungeon.map[enemy.y]?.[enemy.x];
+      if (!ecell?.visible) continue;
       const d = dist(this.player.x, this.player.y, enemy.x, enemy.y);
       if (d <= hackRange && d < minD) { minD = d; target = enemy; }
     }
     if (!target) {
-      this.ui.addMessage('No targets in hack range.', 'red');
+      this.ui.addMessage('No targets in hack range. Stand on ▣ to hack a terminal.', 'red');
       return false;
     }
     const result = Combat.hackAttack(this.player, target);
@@ -225,6 +231,67 @@ class Game {
     this.audio.playHack();
     this.renderer.spawnParticles(target.x, target.y, COLORS.NEON_MAGENTA, 10);
     if (result.killed) this._killEnemy(target);
+    this.ui.updateHUD(this.player, this.floor);
+    return true;
+  }
+
+  _hackTerminal() {
+    const hackCost = 10;
+    if (this.player.energy < hackCost) {
+      this.ui.addMessage('Not enough energy to jack in. Need 10 EN.', 'red');
+      return false;
+    }
+    this.player.energy -= hackCost;
+
+    // Mark terminal as used (becomes floor)
+    this.dungeon.map[this.player.y][this.player.x].type = TILE.FLOOR;
+
+    this.audio.playHack();
+    this.renderer.spawnParticles(this.player.x, this.player.y, COLORS.NEON_GREEN, 14);
+
+    // Random terminal effect
+    const effect = rand(0, 4);
+    switch (effect) {
+      case 0:
+        // Reveal entire floor map
+        for (let y = 0; y < this.dungeon.height; y++)
+          for (let x = 0; x < this.dungeon.width; x++)
+            if (this.dungeon.map[y][x].type !== TILE.WALL)
+              this.dungeon.map[y][x].explored = true;
+        this.ui.addMessage('Terminal: full sector map downloaded.', 'green');
+        break;
+      case 1:
+        // Stun all visible enemies
+        let stunned = 0;
+        for (const enemy of this.dungeon.enemies) {
+          if (this.dungeon.map[enemy.y]?.[enemy.x]?.visible) {
+            enemy.statusEffects = { ...enemy.statusEffects, stunned: 3 };
+            enemy.alerted = true;
+            stunned++;
+          }
+        }
+        this.ui.addMessage(`Terminal: ICE deployed — ${stunned} enemy${stunned !== 1 ? 's' : ''} stunned for 3 turns.`, 'green');
+        break;
+      case 2:
+        // Credits transfer
+        const credits = rand(100, 400) * this.floor;
+        this.player.credits += credits;
+        this.ui.addMessage(`Terminal: siphoned ${credits}¥ from corporate accounts.`, 'yellow');
+        break;
+      case 3:
+        // Energy restore
+        const enGain = this.player.restoreEnergy(40);
+        this.ui.addMessage(`Terminal: neural link synced — +${enGain} EN restored.`, 'cyan');
+        break;
+      case 4:
+        // Reveal all item locations on this floor
+        for (let y = 0; y < this.dungeon.height; y++)
+          for (let x = 0; x < this.dungeon.width; x++)
+            if (this.dungeon.map[y][x].item) this.dungeon.map[y][x].explored = true;
+        this.ui.addMessage('Terminal: contraband locations flagged on your HUD.', 'green');
+        break;
+    }
+
     this.ui.updateHUD(this.player, this.floor);
     return true;
   }
