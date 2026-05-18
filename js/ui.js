@@ -287,12 +287,16 @@ export class UI {
 
   _itemDesc(item) {
     if (item.type === ITEM_TYPE.WEAPON) {
-      const ammo = item.ammo > 0 ? ` | Ammo: ${item.ammo}` : '';
-      return `DMG ${item.minDmg}-${item.maxDmg} | Range ${item.range}${ammo}`;
+      const base = `DMG ${item.minDmg}-${item.maxDmg} | Range ${item.range}`;
+      if (item.ammo < 0) return base; // melee / infinite
+      const maxAmmo = item.currentAmmo || item.ammo;
+      const ammoStr = item.ammo > 0 ? `${item.ammo}/${maxAmmo}` : '<span style="color:#ff1744">EMPTY</span>';
+      return `${base} | ${ammoStr}`;
     }
     if (item.type === ITEM_TYPE.ARMOR) return `DEF +${item.defense}${item.hpBonus ? ' | HP +' + item.hpBonus : ''}`;
     if (item.type === ITEM_TYPE.CONSUMABLE) {
       const parts = [];
+      if (item.ammoRestore) parts.push(`+${item.ammoRestore} rounds`);
       if (item.hpRestore) parts.push(`HP +${item.hpRestore}`);
       if (item.enRestore) parts.push(`EN +${item.enRestore}`);
       if (item.atkBuff) parts.push(`ATK +${item.atkBuff} (${item.buffTurns} turns)`);
