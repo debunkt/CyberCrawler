@@ -43,12 +43,17 @@ export const CYBERWARE_DEFS = [
 ];
 
 export const CONSUMABLE_DEFS = [
-  { name: 'Medkit',        sym: '+', color: '#69ff47', hpRestore: 40,  enRestore: 0,  atkBuff: 0, buffTurns: 0, floor: 1, desc: 'Restore 40 HP.' },
-  { name: 'Trauma Kit',    sym: '+', color: '#ff1744', hpRestore: 100, enRestore: 0,  atkBuff: 0, buffTurns: 0, floor: 3, desc: 'Restore 100 HP.' },
-  { name: 'Energy Cell',   sym: '+', color: '#00e5ff', hpRestore: 0,   enRestore: 30, atkBuff: 0, buffTurns: 0, floor: 1, desc: 'Restore 30 energy.' },
-  { name: 'RAM Upgrade',   sym: '+', color: '#e040fb', hpRestore: 0,   enRestore: 99, atkBuff: 0, buffTurns: 0, floor: 4, desc: 'Restore all energy.' },
-  { name: 'Stim Pack',     sym: '+', color: '#ffd740', hpRestore: 15,  enRestore: 0,  atkBuff: 8, buffTurns: 10, floor: 2, desc: '+8 ATK for 10 turns.' },
-  { name: 'MaxDoc',        sym: '+', color: '#69ff47', hpRestore: 60,  enRestore: 20, atkBuff: 0, buffTurns: 0, floor: 5, desc: 'Restore 60 HP + 20 EN.' },
+  { name: 'Medkit',        sym: '+', color: '#69ff47', hpRestore: 40,  enRestore: 0,  atkBuff: 0, buffTurns: 0, ammoRestore: 0, floor: 1, desc: 'Restore 40 HP.' },
+  { name: 'Trauma Kit',    sym: '+', color: '#ff1744', hpRestore: 100, enRestore: 0,  atkBuff: 0, buffTurns: 0, ammoRestore: 0, floor: 3, desc: 'Restore 100 HP.' },
+  { name: 'Energy Cell',   sym: '+', color: '#00e5ff', hpRestore: 0,   enRestore: 30, atkBuff: 0, buffTurns: 0, ammoRestore: 0, floor: 1, desc: 'Restore 30 energy.' },
+  { name: 'RAM Upgrade',   sym: '+', color: '#e040fb', hpRestore: 0,   enRestore: 99, atkBuff: 0, buffTurns: 0, ammoRestore: 0, floor: 4, desc: 'Restore all energy.' },
+  { name: 'Stim Pack',     sym: '+', color: '#ffd740', hpRestore: 15,  enRestore: 0,  atkBuff: 8, buffTurns: 10, ammoRestore: 0, floor: 2, desc: '+8 ATK for 10 turns.' },
+  { name: 'MaxDoc',        sym: '+', color: '#69ff47', hpRestore: 60,  enRestore: 20, atkBuff: 0, buffTurns: 0, ammoRestore: 0, floor: 5, desc: 'Restore 60 HP + 20 EN.' },
+];
+
+export const AMMO_DEFS = [
+  { name: 'Ammo Clip',    sym: ':', color: '#ffd740', hpRestore: 0, enRestore: 0, atkBuff: 0, buffTurns: 0, ammoRestore: 12, floor: 1, desc: 'Reload 12 rounds into emptiest ranged weapon.' },
+  { name: 'Mk.II Rounds', sym: ':', color: '#69ff47', hpRestore: 0, enRestore: 0, atkBuff: 0, buffTurns: 0, ammoRestore: 20, floor: 5, desc: 'Reload 20 smart rounds into emptiest ranged weapon.' },
 ];
 
 function makeWeapon(def) {
@@ -94,6 +99,13 @@ export function generateFloorItems(floorNum) {
   for (let i = 0; i < numConsumables; i++) {
     const eligible = CONSUMABLE_DEFS.filter(c => c.floor <= floorNum);
     items.push(makeConsumable(randChoice(eligible)));
+  }
+
+  // 1-2 ammo clips
+  const numAmmo = rand(1, 2);
+  const eligibleAmmo = AMMO_DEFS.filter(a => a.floor <= floorNum);
+  for (let i = 0; i < numAmmo; i++) {
+    items.push(makeConsumable(randChoice(eligibleAmmo)));
   }
 
   // 0-1 cyberware
@@ -146,6 +158,15 @@ export function generateShopStock(floorNum) {
     stock.push(item);
   }
 
+  // 2 ammo packs
+  const eligibleAmmo = AMMO_DEFS.filter(a => a.floor <= floorNum + 1);
+  for (let i = 0; i < 2; i++) {
+    const def = randChoice(eligibleAmmo);
+    const item = makeConsumable(def);
+    item.price = 40 + floorNum * 10;
+    stock.push(item);
+  }
+
   // 1 cyberware
   const eligibleCy = CYBERWARE_DEFS.filter(c => c.floor <= floorNum + 1);
   if (eligibleCy.length) {
@@ -165,7 +186,7 @@ export function getSellPrice(item) {
   if (item.type === ITEM_TYPE.ARMOR)
     return Math.max(10, Math.floor(item.defense * 20 + (item.hpBonus || 0) * 2));
   if (item.type === ITEM_TYPE.CONSUMABLE)
-    return Math.max(10, Math.floor((item.hpRestore || 0) * 1.5 + (item.enRestore || 0) * 2 + (item.atkBuff || 0) * 10));
+    return Math.max(10, Math.floor((item.hpRestore || 0) * 1.5 + (item.enRestore || 0) * 2 + (item.atkBuff || 0) * 10 + (item.ammoRestore || 0) * 2));
   if (item.type === ITEM_TYPE.CYBERWARE)
     return Math.max(50, Math.floor(((item.hackBonus || 0) + (item.defBonus || 0) + (item.atkBonus || 0)) * 15 + (item.energyBonus || 0) * 5 + (item.fovBonus || 0) * 20 + 80));
   return 10;

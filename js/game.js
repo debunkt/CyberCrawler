@@ -1,6 +1,6 @@
 import { Dungeon } from './dungeon.js';
 import { Player, createEnemy, FLOOR_ENEMY_POOLS, getEnemyCountForFloor } from './entities.js';
-import { generateFloorItems, generateStarterItems, generateShopStock, getSellPrice, ITEM_TYPE } from './items.js';
+import { generateFloorItems, generateStarterItems, generateShopStock, getSellPrice, ITEM_TYPE, AMMO_DEFS } from './items.js';
 import { Combat } from './combat.js';
 import { Renderer } from './renderer.js';
 import { Audio } from './audio.js';
@@ -403,10 +403,19 @@ class Game {
     this.audio.playEnemyDie();
 
     // Drop loot
-    if (Math.random() < 0.35) {
-      const credits = { id: Date.now(), type: ITEM_TYPE.CREDITS, name: 'Credits', sym: '$', color: COLORS.NEON_YELLOW, amount: rand(20, 80) * this.floor, desc: 'Cash.' };
-      if (!this.dungeon.map[enemy.y][enemy.x].item) {
-        this.dungeon.map[enemy.y][enemy.x].item = credits;
+    if (!this.dungeon.map[enemy.y][enemy.x].item) {
+      const roll = Math.random();
+      if (roll < 0.35) {
+        this.dungeon.map[enemy.y][enemy.x].item = {
+          id: Date.now(), type: ITEM_TYPE.CREDITS, name: 'Credits', sym: '$',
+          color: COLORS.NEON_YELLOW, amount: rand(20, 80) * this.floor, desc: 'Cash.',
+        };
+      } else if (roll < 0.50 && enemy.rangeAtk) {
+        // Ranged enemies drop ammo clips ~15% of the time
+        const def = randChoice(AMMO_DEFS.filter(a => a.floor <= this.floor));
+        this.dungeon.map[enemy.y][enemy.x].item = {
+          id: Date.now() + 1, type: ITEM_TYPE.CONSUMABLE, ...def,
+        };
       }
     }
   }
@@ -507,6 +516,28 @@ class Game {
     if (!item) return;
 
     if (item.type === ITEM_TYPE.CONSUMABLE) {
+      if (item.ammoRestore) {
+        // Collect all ranged weapons — equipped first, then inventory
+        const ranged = [];
+        if (this.player.equippedWeapon?.ammo >= 0) ranged.push(this.player.equippedWeapon);
+        this.player.inventory
+          .filter(i => i !== item && i.type === ITEM_TYPE.WEAPON && i.ammo >= 0)
+          .forEach(w => ranged.push(w));
+        if (ranged.length === 0) {
+          this.ui.addMessage('No ranged weapon to reload.', 'red');
+          this.ui.updateHUD(this.player, this.floor);
+          this.ui.showInventory(this.player);
+          return;
+        }
+        // Reload the emptiest weapon first
+        ranged.sort((a, b) => a.ammo - b.ammo);
+        const target = ranged[0];
+        const maxAmmo = target.currentAmmo || item.ammoRestore;
+        const before = target.ammo;
+        target.ammo = Math.min(target.ammo + item.ammoRestore, maxAmmo);
+        const gained = target.ammo - before;
+        this.ui.addMessage(`Loaded +${gained} rounds into ${target.name} (${target.ammo}/${maxAmmo}).`, 'yellow');
+      }
       if (item.hpRestore) {
         const healed = this.player.heal(item.hpRestore);
         this.ui.addMessage(`Used ${item.name}: +${healed} HP.`, 'green');
