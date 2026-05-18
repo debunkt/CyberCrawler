@@ -517,21 +517,21 @@ class Game {
 
     if (item.type === ITEM_TYPE.CONSUMABLE) {
       if (item.ammoRestore) {
-        // Collect all ranged weapons — equipped first, then inventory
+        // Collect all ranged weapons that aren't already full
         const ranged = [];
         if (this.player.equippedWeapon?.ammo >= 0) ranged.push(this.player.equippedWeapon);
         this.player.inventory
           .filter(i => i !== item && i.type === ITEM_TYPE.WEAPON && i.ammo >= 0)
           .forEach(w => ranged.push(w));
-        if (ranged.length === 0) {
-          this.ui.addMessage('No ranged weapon to reload.', 'red');
+        const needsReload = ranged.filter(w => w.ammo < (w.currentAmmo || 1));
+        if (needsReload.length === 0) {
+          this.ui.addMessage(ranged.length === 0 ? 'No ranged weapon to reload.' : 'All weapons already full.', 'red');
           this.ui.updateHUD(this.player, this.floor);
           this.ui.showInventory(this.player);
           return;
         }
-        // Reload the emptiest weapon first
-        ranged.sort((a, b) => a.ammo - b.ammo);
-        const target = ranged[0];
+        needsReload.sort((a, b) => a.ammo - b.ammo);
+        const target = needsReload[0];
         const maxAmmo = target.currentAmmo || item.ammoRestore;
         const before = target.ammo;
         target.ammo = Math.min(target.ammo + item.ammoRestore, maxAmmo);
