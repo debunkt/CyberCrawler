@@ -536,7 +536,7 @@ class Game {
         const before = target.ammo;
         target.ammo = Math.min(target.ammo + item.ammoRestore, maxAmmo);
         const gained = target.ammo - before;
-        this.ui.addMessage(`Loaded +${gained} rounds into ${target.name} (${target.ammo}/${maxAmmo}).`, 'yellow');
+        this.ui.addMessage(`Reloaded ${target.name}: ${target.ammo}/${maxAmmo} ammo.`, 'yellow');
       }
       if (item.hpRestore) {
         const healed = this.player.heal(item.hpRestore);
