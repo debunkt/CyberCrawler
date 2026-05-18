@@ -1,6 +1,6 @@
 import { Dungeon } from './dungeon.js';
 import { Player, createEnemy, FLOOR_ENEMY_POOLS, getEnemyCountForFloor } from './entities.js';
-import { generateFloorItems, generateStarterItems, generateShopStock, ITEM_TYPE } from './items.js';
+import { generateFloorItems, generateStarterItems, generateShopStock, getSellPrice, ITEM_TYPE } from './items.js';
 import { Combat } from './combat.js';
 import { Renderer } from './renderer.js';
 import { Audio } from './audio.js';
@@ -546,6 +546,26 @@ class Game {
     this._shopStock = null;
     this.state = STATE.PLAYING;
     this.ui.hideAllScreens();
+  }
+
+  sellShopItem(idx, fromEquipped = false) {
+    let item;
+    if (fromEquipped) {
+      const slots = ['equippedWeapon', 'equippedArmor', 'cyberware1', 'cyberware2'];
+      const slot = slots[idx];
+      item = this.player[slot];
+      if (!item) return;
+      this.player[slot] = null;
+    } else {
+      item = this.player.inventory[idx];
+      if (!item) return;
+      this.player.removeItem(item);
+    }
+    const price = getSellPrice(item);
+    this.player.credits += price;
+    this.ui.addMessage(`Sold ${item.name} for ${price}¥.`, 'green');
+    this.ui.updateHUD(this.player, this.floor);
+    this.ui.showShop(this.player, this._shopStock);
   }
 
   buyShopItem(idx) {

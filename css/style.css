@@ -501,6 +501,50 @@ html, body {
 }
 .buy-btn:active { background: rgba(255, 215, 64, 0.3); }
 
+.shop-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.shop-tab {
+  flex: 1;
+  padding: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  background: transparent;
+  color: var(--text);
+  transition: all 0.15s;
+}
+
+.shop-tab.active {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+
+.sell-price {
+  background: rgba(105, 255, 71, 0.1);
+  border: 1px solid rgba(105, 255, 71, 0.5);
+  color: var(--neon-green);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 6px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+  min-width: 52px;
+}
+.sell-price:active { background: rgba(105, 255, 71, 0.3); }
+
 .empty-msg {
   color: rgba(255,255,255,0.3);
   font-size: 12px;

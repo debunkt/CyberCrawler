@@ -324,33 +324,87 @@ export class UI {
     this.hideHUD();
   }
 
-  showShop(player, stock) {
+  showShop(player, stock, tab = this._shopTab || 'buy') {
+    this._shopTab = tab;
     document.getElementById('shop-credits').textContent = `${player.credits}¥`;
+
+    // Tab switching
+    document.getElementById('tab-buy')?.classList.toggle('active', tab === 'buy');
+    document.getElementById('tab-sell')?.classList.toggle('active', tab === 'sell');
+    document.getElementById('tab-buy').onclick = () => this.showShop(player, stock, 'buy');
+    document.getElementById('tab-sell').onclick = () => this.showShop(player, stock, 'sell');
+
     const el = document.getElementById('shop-items');
     if (!el) return;
-    if (!stock || stock.length === 0) {
-      el.innerHTML = '<div class="empty-msg">Sold out. Come back next sector.</div>';
+
+    if (tab === 'buy') {
+      if (!stock || stock.length === 0) {
+        el.innerHTML = '<div class="empty-msg">Sold out. Come back next sector.</div>';
+      } else {
+        el.innerHTML = stock.map((item, i) => {
+          const canAfford = player.credits >= item.price;
+          return `
+            <div class="inv-item" style="border-color:${item.color}20">
+              <span class="item-sym" style="color:${item.color}">${item.sym}</span>
+              <div class="item-info">
+                <div class="item-name" style="color:${item.color}">${item.name}</div>
+                <div class="item-desc">${this._itemDesc(item)}</div>
+              </div>
+              <button class="buy-btn" data-idx="${i}" style="opacity:${canAfford ? 1 : 0.4}">${item.price}¥</button>
+            </div>`;
+        }).join('');
+        el.querySelectorAll('.buy-btn').forEach(btn =>
+          btn.addEventListener('click', () => this.game.buyShopItem(parseInt(btn.dataset.idx)))
+        );
+      }
     } else {
-      el.innerHTML = stock.map((item, i) => {
-        const canAfford = player.credits >= item.price;
-        return `
-          <div class="inv-item" style="border-color:${item.color}20">
-            <span class="item-sym" style="color:${item.color}">${item.sym}</span>
-            <div class="item-info">
-              <div class="item-name" style="color:${item.color}">${item.name}</div>
-              <div class="item-desc">${this._itemDesc(item)}</div>
-            </div>
-            <button class="buy-btn" data-idx="${i}" style="opacity:${canAfford ? 1 : 0.4}">
-              ${item.price}¥
-            </button>
-          </div>
-        `;
-      }).join('');
-      el.querySelectorAll('.buy-btn').forEach(btn => {
-        btn.addEventListener('click', () => this.game.buyShopItem(parseInt(btn.dataset.idx)));
-      });
+      // Sell tab — show equipped + backpack items
+      const equippedSlots = [
+        { label: 'WEAPON',  item: player.equippedWeapon, idx: 0 },
+        { label: 'ARMOR',   item: player.equippedArmor,  idx: 1 },
+        { label: 'CYBER 1', item: player.cyberware1,     idx: 2 },
+        { label: 'CYBER 2', item: player.cyberware2,     idx: 3 },
+      ].filter(s => s.item);
+
+      const equippedHTML = equippedSlots.map(s => this._sellRow(s.item, s.idx, true)).join('');
+      const invHTML = player.inventory.map((item, i) => this._sellRow(item, i, false)).join('');
+
+      if (!equippedSlots.length && !player.inventory.length) {
+        el.innerHTML = '<div class="empty-msg">Nothing to sell.</div>';
+      } else {
+        el.innerHTML =
+          (equippedSlots.length ? `<div style="font-size:10px;color:#00e5ff;letter-spacing:1px;padding:4px 0">EQUIPPED</div>${equippedHTML}` : '') +
+          (player.inventory.length ? `<div style="font-size:10px;color:#00e5ff;letter-spacing:1px;padding:4px 0;margin-top:8px">BACKPACK</div>${invHTML}` : '');
+        el.querySelectorAll('.sell-price').forEach(btn =>
+          btn.addEventListener('click', () =>
+            this.game.sellShopItem(parseInt(btn.dataset.idx), btn.dataset.equipped === 'true')
+          )
+        );
+      }
     }
     this.showScreen('shop-screen');
+  }
+
+  _sellRow(item, idx, equipped) {
+    const price = this._getSellPrice(item);
+    return `
+      <div class="inv-item" style="border-color:${item.color}20">
+        <span class="item-sym" style="color:${item.color}">${item.sym}</span>
+        <div class="item-info">
+          <div class="item-name" style="color:${item.color}">${item.name}</div>
+          <div class="item-desc">${this._itemDesc(item)}</div>
+        </div>
+        <button class="sell-price" data-idx="${idx}" data-equipped="${equipped}">${price}¥</button>
+      </div>`;
+  }
+
+  _getSellPrice(item) {
+    if (item.type === ITEM_TYPE.CREDITS) return 0;
+    if (item.type === 'weapon')     return Math.max(10, Math.floor((item.minDmg + item.maxDmg) * 3));
+    if (item.type === 'armor')      return Math.max(10, Math.floor(item.defense * 20 + (item.hpBonus || 0) * 2));
+    if (item.type === 'consumable') return Math.max(10, Math.floor((item.hpRestore || 0) * 1.5 + (item.enRestore || 0) * 2 + (item.atkBuff || 0) * 10));
+    if (item.type === 'cyberware')  return Math.max(50, Math.floor(((item.hackBonus || 0) + (item.defBonus || 0) + (item.atkBonus || 0)) * 15 + (item.energyBonus || 0) * 5 + (item.fovBonus || 0) * 20 + 80));
+    return 10;
   }
 
   showWin(player) {

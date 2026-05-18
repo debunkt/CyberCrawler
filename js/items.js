@@ -158,6 +158,19 @@ export function generateShopStock(floorNum) {
   return stock;
 }
 
+export function getSellPrice(item) {
+  if (item.type === ITEM_TYPE.CREDITS) return 0;
+  if (item.type === ITEM_TYPE.WEAPON)
+    return Math.max(10, Math.floor((item.minDmg + item.maxDmg) * 3));
+  if (item.type === ITEM_TYPE.ARMOR)
+    return Math.max(10, Math.floor(item.defense * 20 + (item.hpBonus || 0) * 2));
+  if (item.type === ITEM_TYPE.CONSUMABLE)
+    return Math.max(10, Math.floor((item.hpRestore || 0) * 1.5 + (item.enRestore || 0) * 2 + (item.atkBuff || 0) * 10));
+  if (item.type === ITEM_TYPE.CYBERWARE)
+    return Math.max(50, Math.floor(((item.hackBonus || 0) + (item.defBonus || 0) + (item.atkBonus || 0)) * 15 + (item.energyBonus || 0) * 5 + (item.fovBonus || 0) * 20 + 80));
+  return 10;
+}
+
 export function generateStarterItems() {
   return [
     makeWeapon(WEAPON_DEFS[0]), // Combat Knife
