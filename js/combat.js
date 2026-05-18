@@ -80,9 +80,8 @@ export class Combat {
   static enemyCanSeePlayer(enemy, player, dungeon) {
     const d = dist(enemy.x, enemy.y, player.x, player.y);
     if (d > enemy.sight) return false;
-    if (enemy.flying) return true; // drones have unobstructed sensors
-    // Enemy can only see player if the enemy's tile is within the player's FOV
-    // (i.e. player has line of sight to the enemy)
+    // All enemies — including flying drones — can only act when their tile
+    // is within the player's FOV (player has line of sight to them)
     const cell = dungeon.map[enemy.y]?.[enemy.x];
     return cell?.visible === true;
   }
