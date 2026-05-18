@@ -197,8 +197,13 @@ export class UI {
     const ammoEl = document.getElementById('ammo-val');
     if (ammoEl) {
       const w = player.equippedWeapon;
-      if (w && w.ammo > 0) {
-        ammoEl.textContent = `${w.currentAmmo >= 0 ? w.ammo : '∞'}`;
+      if (w && w.range > 1) {
+        // Ranged weapon — show name and ammo as bullet pips
+        const pips = w.ammo > 0
+          ? '◉'.repeat(Math.min(w.ammo, 12)) + (w.ammo > 12 ? `+${w.ammo - 12}` : '')
+          : '[ EMPTY ]';
+        ammoEl.textContent = `${w.name.split(' ')[0].toUpperCase()} ${pips}`;
+        ammoEl.style.color = w.ammo > 0 ? '#ffd740' : '#ff1744';
         ammoEl.style.display = '';
       } else {
         ammoEl.style.display = 'none';
