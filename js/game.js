@@ -8,7 +8,7 @@ import { UI } from './ui.js';
 import { DISTRICT_NAMES, COLORS, TILE } from './config.js';
 import { rand, randChoice, dist } from './utils.js';
 
-const STATE = { MENU: 'MENU', PLAYING: 'PLAYING', INVENTORY: 'INVENTORY', GAMEOVER: 'GAMEOVER', WIN: 'WIN' };
+const STATE = { MENU: 'MENU', PLAYING: 'PLAYING', INVENTORY: 'INVENTORY', MAP: 'MAP', GAMEOVER: 'GAMEOVER', WIN: 'WIN' };
 
 class Game {
   constructor() {
@@ -497,6 +497,17 @@ class Game {
           this.dungeon.map[next.y][next.x].entity = enemy;
         }
       }
+    }
+  }
+
+  toggleMap() {
+    if (this.state === STATE.PLAYING) {
+      this.state = STATE.MAP;
+      this.ui.showMap(this.dungeon, this.player);
+      this.ui.showScreen('map-screen');
+    } else if (this.state === STATE.MAP) {
+      this.state = STATE.PLAYING;
+      this.ui.hideAllScreens();
     }
   }
 

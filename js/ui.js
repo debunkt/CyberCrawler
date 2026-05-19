@@ -1,4 +1,4 @@
-import { COLORS, DISTRICT_NAMES } from './config.js';
+import { COLORS, DISTRICT_NAMES, TILE } from './config.js';
 import { ITEM_TYPE } from './items.js';
 
 const MAX_MESSAGES = 8;
@@ -80,9 +80,13 @@ export class UI {
         'g': { type: 'PICKUP' },
         '>': { type: 'STAIRS' },
         'i': null, // inventory toggle
+        'm': null, // map toggle
       };
       const action = keyMap[e.key];
-      if (action === null) {
+      if (action === null && e.key === 'm') {
+        e.preventDefault();
+        g.toggleMap();
+      } else if (action === null) {
         e.preventDefault();
         g.toggleInventory();
       } else if (action) {
@@ -126,6 +130,8 @@ export class UI {
   _bindInventoryButtons() {
     document.getElementById('inv-btn')?.addEventListener('click', () => this.game.toggleInventory());
     document.getElementById('close-inv')?.addEventListener('click', () => this.game.toggleInventory());
+    document.getElementById('map-btn')?.addEventListener('click', () => this.game.toggleMap());
+    document.getElementById('close-map')?.addEventListener('click', () => this.game.toggleMap());
   }
 
   showScreen(id) {
@@ -313,6 +319,73 @@ export class UI {
     }
     if (item.type === ITEM_TYPE.CREDITS) return `${item.amount}¥`;
     return item.desc || '';
+  }
+
+  showMap(dungeon, player) {
+    const canvas = document.getElementById('map-canvas');
+    if (!canvas) return;
+
+    const padding = 32;
+    const maxW = window.innerWidth - padding;
+    const maxH = window.innerHeight - 80;
+    const ts = Math.max(4, Math.min(
+      Math.floor(maxW / dungeon.width),
+      Math.floor(maxH / dungeon.height)
+    ));
+
+    canvas.width = dungeon.width * ts;
+    canvas.height = dungeon.height * ts;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#020b18';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (let y = 0; y < dungeon.height; y++) {
+      for (let x = 0; x < dungeon.width; x++) {
+        const cell = dungeon.map[y][x];
+        if (!cell.explored) continue;
+
+        const sx = x * ts;
+        const sy = y * ts;
+
+        // Tile background
+        if (cell.type === TILE.WALL) {
+          ctx.fillStyle = cell.visible ? '#1a3050' : '#091420';
+        } else {
+          ctx.fillStyle = cell.visible ? '#1a3550' : '#0d2035';
+        }
+        ctx.fillRect(sx, sy, ts, ts);
+
+        // Special tiles — 1px inset block
+        if (cell.type === TILE.STAIRS_DOWN) {
+          ctx.fillStyle = '#ffd740';
+          ctx.fillRect(sx + 1, sy + 1, ts - 2, ts - 2);
+        } else if (cell.type === TILE.TERMINAL) {
+          ctx.fillStyle = cell.isShop ? '#ffd740' : '#69ff47';
+          ctx.fillRect(sx + 1, sy + 1, ts - 2, ts - 2);
+        }
+
+        // Item dot
+        if (cell.item) {
+          const dot = Math.max(2, ts - 2);
+          const off = Math.floor((ts - dot) / 2);
+          ctx.fillStyle = cell.item.color;
+          ctx.fillRect(sx + off, sy + off, dot, dot);
+        }
+      }
+    }
+
+    // Enemies — red dots on visible tiles
+    for (const enemy of dungeon.enemies) {
+      const cell = dungeon.map[enemy.y]?.[enemy.x];
+      if (!cell?.visible) continue;
+      ctx.fillStyle = enemy.color;
+      ctx.fillRect(enemy.x * ts + 1, enemy.y * ts + 1, ts - 2, ts - 2);
+    }
+
+    // Player — bright cyan
+    ctx.fillStyle = '#00e5ff';
+    ctx.fillRect(player.x * ts, player.y * ts, ts, ts);
   }
 
   showGameOver(player, floorNum, deathMsg) {
