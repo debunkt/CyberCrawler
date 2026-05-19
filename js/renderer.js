@@ -68,14 +68,14 @@ export class Renderer {
       }
     }
 
-    // Draw items
+    // Draw items (visible = full colour, explored-only = dimmed)
     for (let y = startY; y < endY; y++) {
       for (let x = startX; x < endX; x++) {
         const cell = dungeon.map[y][x];
-        if (!cell.visible || !cell.item) continue;
+        if (!cell.explored || !cell.item) continue;
         const sx = (x - camX) * ts;
         const sy = (y - camY) * ts;
-        this._drawItem(ctx, cell.item, sx, sy, ts);
+        this._drawItem(ctx, cell.item, sx, sy, ts, cell.visible);
       }
     }
 
@@ -171,13 +171,15 @@ export class Renderer {
     }
   }
 
-  _drawItem(ctx, item, sx, sy, ts) {
-    ctx.shadowBlur = 8;
+  _drawItem(ctx, item, sx, sy, ts, visible = true) {
+    ctx.globalAlpha = visible ? 1 : 0.45;
+    ctx.shadowBlur = visible ? 8 : 0;
     ctx.shadowColor = item.color;
     ctx.fillStyle = item.color;
     ctx.font = `bold ${ts - 8}px monospace`;
     ctx.fillText(item.sym, sx + ts / 2, sy + ts / 2);
     ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
     ctx.font = `bold ${ts - 4}px monospace`;
   }
 
