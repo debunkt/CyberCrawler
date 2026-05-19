@@ -157,6 +157,13 @@ export class Renderer {
       ctx.fillStyle = visible ? color : '#6b5020';
       ctx.fillText(GLYPH[type], sx + ts / 2, sy + ts / 2);
       ctx.shadowBlur = 0;
+    } else if (type === TILE.RIPPERDOC) {
+      const pulse = visible ? Math.sin(this.animFrame * 0.1) * 6 + 8 : 0;
+      ctx.shadowBlur = pulse;
+      ctx.shadowColor = '#ff4081';
+      ctx.fillStyle = visible ? '#ff4081' : '#3a0010';
+      ctx.fillText('R', sx + ts / 2, sy + ts / 2);
+      ctx.shadowBlur = 0;
     } else if (type === TILE.TELEPORTER) {
       const pulse = visible ? Math.sin(this.animFrame * 0.15) * 8 + 10 : 0;
       ctx.shadowBlur = pulse;

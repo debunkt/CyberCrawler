@@ -19,6 +19,7 @@ export const TILE = {
   WATER: 5,
   DOOR: 6,
   TELEPORTER: 7,
+  RIPPERDOC: 8,
 };
 
 export const COLORS = {

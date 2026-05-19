@@ -74,6 +74,7 @@ export class Dungeon {
     this._bspGenerate();
     this._placeStairs();
     this._placeTeleporters();
+    this._placeRipperdoc();
   }
 
   _initMap() {
@@ -237,6 +238,21 @@ export class Dungeon {
       this.teleporterLinks.set(`${ax},${ay}`, { x: bx, y: by });
       this.teleporterLinks.set(`${bx},${by}`, { x: ax, y: ay });
     }
+  }
+
+  _placeRipperdoc() {
+    // Pick a middle room that has a plain floor center
+    const candidates = this.rooms.slice(1, -1).filter(r => {
+      const cx = Math.floor(r.x + r.w / 2);
+      const cy = Math.floor(r.y + r.h / 2);
+      return this.map[cy][cx].type === TILE.FLOOR;
+    });
+    if (candidates.length === 0) return;
+    const room = randChoice(candidates);
+    const rx = Math.floor(room.x + room.w / 2);
+    const ry = Math.floor(room.y + room.h / 2);
+    this.map[ry][rx].type = TILE.RIPPERDOC;
+    this.ripperdocPos = { x: rx, y: ry };
   }
 
   isWalkable(x, y) {
