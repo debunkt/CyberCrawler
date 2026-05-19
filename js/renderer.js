@@ -154,13 +154,13 @@ export class Renderer {
       const glow = visible ? 12 : 0;
       ctx.shadowBlur = glow;
       ctx.shadowColor = color;
-      ctx.fillStyle = visible ? color : '#2a2010';
+      ctx.fillStyle = visible ? color : '#6b5020';
       ctx.fillText(GLYPH[type], sx + ts / 2, sy + ts / 2);
       ctx.shadowBlur = 0;
     } else if (type === TILE.TERMINAL) {
       const isShop = cell.isShop;
       const tColor = isShop ? COLORS.NEON_YELLOW : COLORS.TERMINAL;
-      const tDim   = isShop ? '#2a2000' : '#0d1a0d';
+      const tDim   = isShop ? '#6b5500' : '#1a4020';
       const pulse = visible ? Math.sin(this.animFrame * 0.08) * 6 + 8 : 0;
       ctx.shadowBlur = pulse;
       ctx.shadowColor = tColor;
