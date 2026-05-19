@@ -39,6 +39,7 @@
           <span id="ammo-val" style="display:none;color:#ffd740;font-weight:bold;letter-spacing:1px"></span>
         </div>
       </div>
+      <button class="hud-btn" id="map-btn">MAP</button>
       <button class="hud-btn" id="inv-btn">INV</button>
     </div>
     <div id="msg-log">
@@ -137,6 +138,14 @@
       <button class="shop-tab" id="tab-sell">SELL</button>
     </div>
     <div id="shop-items" style="width:100%;max-width:480px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;padding-bottom:20px"></div>
+  </div>
+
+  <div id="map-screen" class="screen">
+    <div class="screen-header">
+      <h2 class="neon-text" style="font-size:15px;letter-spacing:2px">◈ SECTOR MAP</h2>
+      <button class="close-btn" id="close-map">✕</button>
+    </div>
+    <canvas id="map-canvas" style="display:block;margin:0 auto;image-rendering:pixelated"></canvas>
   </div>
 
   <div id="howto-screen" class="screen">
