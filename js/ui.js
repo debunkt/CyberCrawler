@@ -122,6 +122,7 @@ export class UI {
     document.getElementById('how-btn')?.addEventListener('click', () => this.showScreen('howto-screen'));
     document.getElementById('close-howto')?.addEventListener('click', () => this.showScreen('menu-screen'));
     document.getElementById('close-shop')?.addEventListener('click', () => g.closeShop());
+    document.getElementById('close-ripperdoc')?.addEventListener('click', () => g.closeRipperdoc());
     document.getElementById('retry-btn')?.addEventListener('click', () => g.newGame());
     document.getElementById('play-again-btn')?.addEventListener('click', () => g.newGame());
     document.getElementById('menu-btn2')?.addEventListener('click', () => this.showScreen('menu-screen'));
@@ -321,6 +322,36 @@ export class UI {
     return item.desc || '';
   }
 
+  showRipperdoc(player, services) {
+    document.getElementById('ripperdoc-credits').textContent = `${player.credits}¥`;
+    document.getElementById('ripperdoc-hp').textContent = `${player.hp}/${player.maxHp}`;
+    const el = document.getElementById('ripperdoc-services');
+    if (!el) return;
+    el.innerHTML = services.map((svc, i) => {
+      const canAfford = player.credits >= svc.price;
+      const alreadyFull = svc.hp >= 9999 && player.hp >= player.maxHp && (svc.en === 0 || player.energy >= player.maxEnergy);
+      return `
+        <div class="inv-item" style="border-color:#ff408120">
+          <span class="item-sym" style="color:#ff4081">✚</span>
+          <div class="item-info">
+            <div class="item-name" style="color:#ff4081">${svc.name}</div>
+            <div class="item-desc">${svc.desc}</div>
+          </div>
+          <button class="rip-btn" data-idx="${i}"
+            style="opacity:${canAfford && !alreadyFull ? 1 : 0.4};
+                   background:rgba(255,64,129,0.1);border:1px solid #ff4081;
+                   color:#ff4081;font-family:inherit;font-size:11px;font-weight:bold;
+                   padding:6px 8px;border-radius:3px;cursor:pointer;flex-shrink:0;min-width:56px">
+            ${svc.price}¥
+          </button>
+        </div>`;
+    }).join('');
+    el.querySelectorAll('.rip-btn').forEach(btn =>
+      btn.addEventListener('click', () => this.game.buyRipperdocService(parseInt(btn.dataset.idx)))
+    );
+    this.showScreen('ripperdoc-screen');
+  }
+
   showMap(dungeon, player) {
     const canvas = document.getElementById('map-canvas');
     if (!canvas) return;
@@ -365,6 +396,9 @@ export class UI {
           ctx.fillRect(sx + 1, sy + 1, ts - 2, ts - 2);
         } else if (cell.type === TILE.TELEPORTER) {
           ctx.fillStyle = '#e040fb';
+          ctx.fillRect(sx + 1, sy + 1, ts - 2, ts - 2);
+        } else if (cell.type === TILE.RIPPERDOC) {
+          ctx.fillStyle = '#ff4081';
           ctx.fillRect(sx + 1, sy + 1, ts - 2, ts - 2);
         }
 

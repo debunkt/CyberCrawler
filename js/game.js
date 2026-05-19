@@ -8,7 +8,7 @@ import { UI } from './ui.js';
 import { DISTRICT_NAMES, COLORS, TILE } from './config.js';
 import { rand, randChoice, dist } from './utils.js';
 
-const STATE = { MENU: 'MENU', PLAYING: 'PLAYING', INVENTORY: 'INVENTORY', MAP: 'MAP', GAMEOVER: 'GAMEOVER', WIN: 'WIN' };
+const STATE = { MENU: 'MENU', PLAYING: 'PLAYING', INVENTORY: 'INVENTORY', MAP: 'MAP', RIPPERDOC: 'RIPPERDOC', GAMEOVER: 'GAMEOVER', WIN: 'WIN' };
 
 class Game {
   constructor() {
@@ -201,9 +201,11 @@ class Game {
     if (cell.item?.type === ITEM_TYPE.CREDITS) {
       this._pickupItemAt(nx, ny);
     }
-    // Teleporter hint
+    // Tile hints
     if (cell.type === TILE.TELEPORTER) {
       this.ui.addMessage('Ω Teleporter — HACK to activate.', 'magenta');
+    } else if (cell.type === TILE.RIPPERDOC) {
+      this.ui.addMessage('R Ripperdoc — HACK to open clinic.', 'normal');
     }
     return true;
   }
@@ -216,6 +218,10 @@ class Game {
     }
     if (cell.type === TILE.TELEPORTER) {
       return this._useTeleporter();
+    }
+    if (cell.type === TILE.RIPPERDOC) {
+      this._openRipperdoc();
+      return true;
     }
 
     // Otherwise quickhack nearest visible enemy
@@ -608,6 +614,43 @@ class Game {
     }
     this.state = STATE.INVENTORY; // pause enemies
     this.ui.showShop(this.player, this._shopStock);
+  }
+
+  _openRipperdoc() {
+    const f = this.floor;
+    this._ripperdocServices = [
+      { name: 'Quick Patch',     desc: 'Restore 50 HP.',           hp: 50,  en: 0,            price: 80 * f  },
+      { name: 'Full Treatment',  desc: 'Restore to full HP.',      hp: 9999, en: 0,           price: 200 * f },
+      { name: 'Neural Flush',    desc: 'Full HP + full EN.',       hp: 9999, en: 9999,        price: 350 * f },
+    ];
+    this.state = STATE.RIPPERDOC;
+    this.ui.showRipperdoc(this.player, this._ripperdocServices);
+  }
+
+  buyRipperdocService(idx) {
+    const svc = this._ripperdocServices?.[idx];
+    if (!svc) return;
+    if (this.player.credits < svc.price) {
+      this.ui.addMessage(`Need ${svc.price}¥ — you only have ${this.player.credits}¥.`, 'red');
+      this.ui.showRipperdoc(this.player, this._ripperdocServices);
+      return;
+    }
+    this.player.credits -= svc.price;
+    const healed = this.player.heal(svc.hp);
+    const energized = svc.en > 0 ? this.player.restoreEnergy(svc.en) : 0;
+    let msg = `Ripperdoc: +${healed} HP`;
+    if (energized > 0) msg += `, +${energized} EN`;
+    msg += `.`;
+    this.ui.addMessage(msg, 'green');
+    this.audio.playPickup();
+    this.ui.updateHUD(this.player, this.floor);
+    this.ui.showRipperdoc(this.player, this._ripperdocServices);
+  }
+
+  closeRipperdoc() {
+    this._ripperdocServices = null;
+    this.state = STATE.PLAYING;
+    this.ui.hideAllScreens();
   }
 
   closeShop() {
