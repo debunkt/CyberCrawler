@@ -270,7 +270,7 @@ class Game {
         break;
       case 1:
         // Credits transfer
-        const credits = rand(100, 400) * this.floor;
+        const credits = rand(40, 150) * this.floor;
         this.player.credits += credits;
         this.ui.addMessage(`Terminal: siphoned ${credits}¥ from corps.`, 'yellow');
         break;
@@ -408,7 +408,7 @@ class Game {
       if (roll < 0.35) {
         this.dungeon.map[enemy.y][enemy.x].item = {
           id: Date.now(), type: ITEM_TYPE.CREDITS, name: 'Credits', sym: '$',
-          color: COLORS.NEON_YELLOW, amount: rand(20, 80) * this.floor, desc: 'Cash.',
+          color: COLORS.NEON_YELLOW, amount: rand(10, 35) * this.floor, desc: 'Cash.',
         };
       } else if (roll < 0.50 && enemy.rangeAtk) {
         // Ranged enemies drop ammo clips ~15% of the time
