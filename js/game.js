@@ -290,8 +290,9 @@ class Game {
     this.audio.playHack();
     this.renderer.spawnParticles(this.player.x, this.player.y, COLORS.NEON_GREEN, 14);
 
-    // Random terminal effect
-    const effect = rand(0, 3);
+    // Random terminal effect — sector map is rare (~12%)
+    const roll = Math.random();
+    const effect = roll < 0.12 ? 0 : roll < 0.45 ? 1 : roll < 0.75 ? 2 : 3;
     switch (effect) {
       case 0:
         // Reveal entire floor map including walls
