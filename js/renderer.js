@@ -157,6 +157,13 @@ export class Renderer {
       ctx.fillStyle = visible ? color : '#6b5020';
       ctx.fillText(GLYPH[type], sx + ts / 2, sy + ts / 2);
       ctx.shadowBlur = 0;
+    } else if (type === TILE.TELEPORTER) {
+      const pulse = visible ? Math.sin(this.animFrame * 0.15) * 8 + 10 : 0;
+      ctx.shadowBlur = pulse;
+      ctx.shadowColor = COLORS.NEON_MAGENTA;
+      ctx.fillStyle = visible ? COLORS.NEON_MAGENTA : '#2a0040';
+      ctx.fillText('Ω', sx + ts / 2, sy + ts / 2);
+      ctx.shadowBlur = 0;
     } else if (type === TILE.TERMINAL) {
       const isShop = cell.isShop;
       const tColor = isShop ? COLORS.NEON_YELLOW : COLORS.TERMINAL;

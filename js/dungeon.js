@@ -73,6 +73,7 @@ export class Dungeon {
     this._initMap();
     this._bspGenerate();
     this._placeStairs();
+    this._placeTeleporters();
   }
 
   _initMap() {
@@ -208,6 +209,33 @@ export class Dungeon {
       const shopPos = randChoice(terminalRooms);
       this.map[shopPos.y][shopPos.x].isShop = true;
       this.shopPos = shopPos;
+    }
+  }
+
+  _placeTeleporters() {
+    this.teleporterLinks = new Map();
+    // Need enough rooms to pick 2 pairs without hitting start/end rooms
+    const candidates = this.rooms.slice(1, -1).filter(r => {
+      const cx = Math.floor(r.x + r.w / 2);
+      const cy = Math.floor(r.y + r.h / 2);
+      return this.map[cy][cx].type === TILE.FLOOR;
+    });
+    if (candidates.length < 2) return;
+
+    const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+    const numPairs = Math.min(2, Math.floor(shuffled.length / 2));
+
+    for (let i = 0; i < numPairs; i++) {
+      const rA = shuffled[i * 2];
+      const rB = shuffled[i * 2 + 1];
+      const ax = Math.floor(rA.x + rA.w / 2);
+      const ay = Math.floor(rA.y + rA.h / 2);
+      const bx = Math.floor(rB.x + rB.w / 2);
+      const by = Math.floor(rB.y + rB.h / 2);
+      this.map[ay][ax].type = TILE.TELEPORTER;
+      this.map[by][bx].type = TILE.TELEPORTER;
+      this.teleporterLinks.set(`${ax},${ay}`, { x: bx, y: by });
+      this.teleporterLinks.set(`${bx},${by}`, { x: ax, y: ay });
     }
   }
 

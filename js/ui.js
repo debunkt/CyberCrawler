@@ -363,6 +363,9 @@ export class UI {
         } else if (cell.type === TILE.TERMINAL) {
           ctx.fillStyle = cell.isShop ? '#ffd740' : '#69ff47';
           ctx.fillRect(sx + 1, sy + 1, ts - 2, ts - 2);
+        } else if (cell.type === TILE.TELEPORTER) {
+          ctx.fillStyle = '#e040fb';
+          ctx.fillRect(sx + 1, sy + 1, ts - 2, ts - 2);
         }
 
         // Item dot
