@@ -201,14 +201,21 @@ class Game {
     if (cell.item?.type === ITEM_TYPE.CREDITS) {
       this._pickupItemAt(nx, ny);
     }
+    // Teleporter hint
+    if (cell.type === TILE.TELEPORTER) {
+      this.ui.addMessage('Ω Teleporter — HACK to activate.', 'magenta');
+    }
     return true;
   }
 
   _handleHack() {
-    // Priority: hack terminal if standing on one
+    // Priority: check tile player is standing on
     const cell = this.dungeon.map[this.player.y][this.player.x];
     if (cell.type === TILE.TERMINAL) {
       return this._hackTerminal();
+    }
+    if (cell.type === TILE.TELEPORTER) {
+      return this._useTeleporter();
     }
 
     // Otherwise quickhack nearest visible enemy
@@ -232,6 +239,25 @@ class Game {
     this.renderer.spawnParticles(target.x, target.y, COLORS.NEON_MAGENTA, 10);
     if (result.killed) this._killEnemy(target);
     this.ui.updateHUD(this.player, this.floor);
+    return true;
+  }
+
+  _useTeleporter() {
+    const key = `${this.player.x},${this.player.y}`;
+    const dest = this.dungeon.teleporterLinks?.get(key);
+    if (!dest) {
+      this.ui.addMessage('Teleporter offline.', 'red');
+      return false;
+    }
+    this.dungeon.map[this.player.y][this.player.x].entity = null;
+    this.player.x = dest.x;
+    this.player.y = dest.y;
+    this.dungeon.map[dest.y][dest.x].entity = this.player;
+    this.dungeon.updateFOV(this.player.x, this.player.y, this.player.effectiveFov);
+    this.audio.playStairs();
+    this.renderer.spawnParticles(dest.x, dest.y, COLORS.NEON_MAGENTA, 14);
+    this.renderer.flash('#e040fb', 0.2);
+    this.ui.addMessage('Teleported across the sector.', 'magenta');
     return true;
   }
 
