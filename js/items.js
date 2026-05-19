@@ -116,10 +116,10 @@ export function generateFloorItems(floorNum) {
     }
   }
 
-  // 2-4 credit piles
-  const numCredits = rand(2, 4);
+  // 1-2 credit piles
+  const numCredits = rand(1, 2);
   for (let i = 0; i < numCredits; i++) {
-    items.push(makeCredits(rand(50 * floorNum, 200 * floorNum)));
+    items.push(makeCredits(rand(20 * floorNum, 60 * floorNum)));
   }
 
   return items;
