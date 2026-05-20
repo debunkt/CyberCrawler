@@ -192,6 +192,23 @@ export function getSellPrice(item) {
   return 10;
 }
 
+export function makeSecretLoot(floorNum) {
+  const items = [];
+  // A weapon from the next floor tier (sneak peek at future gear)
+  const eligible = WEAPON_DEFS.filter(w => w.floor <= Math.min(floorNum + 2, 10));
+  const weights = eligible.map(w => ({ value: w, weight: w.floor }));
+  items.push(makeWeapon(weightedRand(weights)));
+  // A cyberware if available
+  const eligibleCy = CYBERWARE_DEFS.filter(c => c.floor <= floorNum + 1);
+  if (eligibleCy.length) items.push(makeCyberware(randChoice(eligibleCy)));
+  // A medkit and energy cell
+  items.push(makeConsumable(CONSUMABLE_DEFS[0]));
+  items.push(makeConsumable(CONSUMABLE_DEFS[2]));
+  // A credit bonus
+  items.push(makeCredits(rand(150 * floorNum, 400 * floorNum)));
+  return items;
+}
+
 export function generateStarterItems() {
   return [
     makeWeapon(WEAPON_DEFS[0]), // Combat Knife

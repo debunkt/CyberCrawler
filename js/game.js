@@ -1,6 +1,6 @@
 import { Dungeon } from './dungeon.js';
 import { Player, createEnemy, FLOOR_ENEMY_POOLS, getEnemyCountForFloor } from './entities.js';
-import { generateFloorItems, generateStarterItems, generateShopStock, getSellPrice, ITEM_TYPE, AMMO_DEFS } from './items.js';
+import { generateFloorItems, generateStarterItems, generateShopStock, getSellPrice, ITEM_TYPE, AMMO_DEFS, makeSecretLoot } from './items.js';
 import { Combat } from './combat.js';
 import { Renderer } from './renderer.js';
 import { Audio } from './audio.js';
@@ -140,6 +140,24 @@ class Game {
       if (!pos) continue;
       this.dungeon.map[pos.y][pos.x].item = item;
       excludeStart.push(pos);
+    }
+
+    // Bonus loot in sealed secret rooms
+    for (const room of (this.dungeon.secretRooms || [])) {
+      const loot = makeSecretLoot(this.floor);
+      for (const item of loot) {
+        // Place within the secret room bounds
+        const candidates = [];
+        for (let y = room.y; y < room.y + room.h; y++)
+          for (let x = room.x; x < room.x + room.w; x++) {
+            const cell = this.dungeon.map[y][x];
+            if (cell.type === TILE.FLOOR && !cell.item && !cell.entity)
+              candidates.push({ x, y });
+          }
+        if (candidates.length === 0) continue;
+        const pos = randChoice(candidates);
+        this.dungeon.map[pos.y][pos.x].item = item;
+      }
     }
   }
 

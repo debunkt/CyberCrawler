@@ -215,7 +215,7 @@ export class Dungeon {
 
   _placeTeleporters() {
     this.teleporterLinks = new Map();
-    // Need enough rooms to pick 2 pairs without hitting start/end rooms
+    this.secretRooms = [];
     const candidates = this.rooms.slice(1, -1).filter(r => {
       const cx = Math.floor(r.x + r.w / 2);
       const cy = Math.floor(r.y + r.h / 2);
@@ -228,16 +228,51 @@ export class Dungeon {
 
     for (let i = 0; i < numPairs; i++) {
       const rA = shuffled[i * 2];
-      const rB = shuffled[i * 2 + 1];
       const ax = Math.floor(rA.x + rA.w / 2);
       const ay = Math.floor(rA.y + rA.h / 2);
-      const bx = Math.floor(rB.x + rB.w / 2);
-      const by = Math.floor(rB.y + rB.h / 2);
+
+      let bx, by;
+      // ~50% chance this teleporter leads to a sealed secret room
+      if (Math.random() < 0.5) {
+        const secret = this._carveSecretRoom();
+        if (secret) {
+          bx = secret.cx;
+          by = secret.cy;
+          this.secretRooms.push(secret);
+        }
+      }
+      if (bx === undefined) {
+        const rB = shuffled[i * 2 + 1];
+        bx = Math.floor(rB.x + rB.w / 2);
+        by = Math.floor(rB.y + rB.h / 2);
+      }
+
       this.map[ay][ax].type = TILE.TELEPORTER;
       this.map[by][bx].type = TILE.TELEPORTER;
       this.teleporterLinks.set(`${ax},${ay}`, { x: bx, y: by });
       this.teleporterLinks.set(`${bx},${by}`, { x: ax, y: ay });
     }
+  }
+
+  _carveSecretRoom() {
+    const rw = rand(5, 8);
+    const rh = rand(4, 6);
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const rx = rand(2, this.width - rw - 2);
+      const ry = rand(2, this.height - rh - 2);
+      // Check the room + 1-tile border is all walls
+      let clear = true;
+      for (let y = ry - 1; y <= ry + rh && clear; y++)
+        for (let x = rx - 1; x <= rx + rw && clear; x++)
+          if (this.map[y]?.[x]?.type !== TILE.WALL) clear = false;
+      if (!clear) continue;
+      // Carve it
+      for (let y = ry; y < ry + rh; y++)
+        for (let x = rx; x < rx + rw; x++)
+          this.map[y][x].type = TILE.FLOOR;
+      return { x: rx, y: ry, w: rw, h: rh, cx: Math.floor(rx + rw / 2), cy: Math.floor(ry + rh / 2) };
+    }
+    return null;
   }
 
   _placeRipperdoc() {
