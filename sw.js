@@ -1,4 +1,4 @@
-const CACHE = 'nightcrawl-v9';
+const CACHE = 'nightcrawl-v10';
 const ASSETS = [
   '/',
   '/index.html',
