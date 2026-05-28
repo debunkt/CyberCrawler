@@ -497,6 +497,7 @@ class Game {
           const result = Combat.hackAttack(enemy, p);
           this.ui.addMessage(result.message, 'red');
           this.renderer.flash('#8800ff', 0.15);
+          this.renderer.damageVignette('hack');
           this.audio.playHit();
           enemy.reloadCooldown = enemy.reloadMax;
           if (p.isDead()) return;
@@ -519,6 +520,7 @@ class Game {
             if (!result.outOfRange && !result.noAmmo) {
               this.ui.addMessage(result.message, 'red');
               this.renderer.flash('#ff1744', 0.12);
+              this.renderer.damageVignette('physical');
               this.audio.playHit();
               if (p.isDead()) return;
             }
@@ -533,6 +535,7 @@ class Game {
         const result = Combat.meleeAttack(enemy, p);
         this.ui.addMessage(result.message, 'red');
         this.renderer.flash('#ff1744', 0.15);
+        this.renderer.damageVignette('physical');
         this.audio.playHit();
         if (p.isDead()) return;
         continue;
