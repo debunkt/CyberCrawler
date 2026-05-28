@@ -112,12 +112,12 @@ export class Renderer {
       const cx = this.canvas.width / 2;
       const cy = this.canvas.height / 2;
       const r = Math.max(cx, cy);
-      const grad = ctx.createRadialGradient(cx, cy, r * 0.35, cx, cy, r * 1.1);
+      const grad = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r * 1.1);
       grad.addColorStop(0, `rgba(${this.vignetteColor},0)`);
-      grad.addColorStop(1, `rgba(${this.vignetteColor},${(this.vignetteAlpha * 0.75).toFixed(2)})`);
+      grad.addColorStop(1, `rgba(${this.vignetteColor},${(this.vignetteAlpha * 0.9).toFixed(2)})`);
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-      this.vignetteAlpha = Math.max(0, this.vignetteAlpha - 0.035);
+      this.vignetteAlpha = Math.max(0, this.vignetteAlpha - 0.02);
     }
 
     // Subtle scanlines
