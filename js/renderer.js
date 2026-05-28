@@ -20,6 +20,8 @@ export class Renderer {
     this.animFrame = 0;
     this.flashAlpha = 0;
     this.flashColor = '#ff1744';
+    this.vignetteAlpha = 0;
+    this.vignetteColor = '255,23,68';
     this.particles = [];
     this.resize();
   }
@@ -96,13 +98,26 @@ export class Renderer {
     // Draw particles
     this._updateParticles(ctx, camX, camY, ts);
 
-    // Damage flash
+    // Damage flash (full screen)
     if (this.flashAlpha > 0) {
       ctx.globalAlpha = this.flashAlpha;
       ctx.fillStyle = this.flashColor;
       ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       ctx.globalAlpha = 1;
       this.flashAlpha = Math.max(0, this.flashAlpha - 0.05);
+    }
+
+    // Damage vignette (edge glow — more visible than full-screen flash)
+    if (this.vignetteAlpha > 0) {
+      const cx = this.canvas.width / 2;
+      const cy = this.canvas.height / 2;
+      const r = Math.max(cx, cy);
+      const grad = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r * 1.1);
+      grad.addColorStop(0, `rgba(${this.vignetteColor},0)`);
+      grad.addColorStop(1, `rgba(${this.vignetteColor},${(this.vignetteAlpha * 0.9).toFixed(2)})`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      this.vignetteAlpha = Math.max(0, this.vignetteAlpha - 0.02);
     }
 
     // Subtle scanlines
@@ -267,6 +282,15 @@ export class Renderer {
   flash(color = '#ff1744', alpha = 0.25) {
     this.flashColor = color;
     this.flashAlpha = alpha;
+  }
+
+  damageVignette(type = 'physical') {
+    if (type === 'hack') {
+      this.vignetteColor = '224,64,251'; // magenta for hack damage
+    } else {
+      this.vignetteColor = '255,23,68';  // red for physical
+    }
+    this.vignetteAlpha = Math.min(1, this.vignetteAlpha + 0.9);
   }
 
   renderMenu(canvas) {
